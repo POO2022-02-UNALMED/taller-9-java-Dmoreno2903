@@ -1,6 +1,8 @@
 package gui;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -146,44 +148,55 @@ public class Calculator extends VBox implements EventHandler<ActionEvent>{
 	}
 	
 	public String cOperacion(String cadena) {
-		boolean oValida = true;
-		int result = 0;
-		String[] aNum;
-		if (cadena.contains("+")) {
-			aNum = cadena.split("\\+");
-			int n1 = Integer.parseInt(aNum[0]); 
-			int n2 = Integer.parseInt(aNum[1]);
-			result = n1+n2;
-		}
-		else if (cadena.contains("-")){
-			aNum = cadena.split("-");
-			int n1 = Integer.parseInt(aNum[0]); 
-			int n2 = Integer.parseInt(aNum[1]);
-			result = n1-n2;
-		}
-		else if (cadena.contains("*")) {
-			aNum = cadena.split("\\*");
-			int n1 = Integer.parseInt(aNum[0]); 
-			int n2 = Integer.parseInt(aNum[1]);
-			result = n1*n2;
-		}
-		else if (cadena.contains("/")) {
-			aNum = cadena.split("/");
-			int n1 = Integer.parseInt(aNum[0]); 
-			int n2 = Integer.parseInt(aNum[1]);
-			if (n2 != 0) {
-				result = n1/n2;
-			}
-			else {
-				oValida = false;
-			}
-		}
-		if (oValida == true) {
-			String cadString = Integer.toString(result);
-			return cadString;
+		String result = null;
+
+		Pattern bFirst = Pattern.compile("^-?\\d*(\\.\\d+)?", Pattern.DOTALL);
+		Pattern bSecond = Pattern.compile("\\d*(\\.\\d+)?$", Pattern.DOTALL);
+		Pattern bOperator = Pattern.compile("[-+*/]", Pattern.DOTALL);
+
+		Matcher mat1 = bFirst.matcher(cadena);
+		mat1.find();
+		Matcher mat2 = bSecond.matcher(cadena);
+		mat2.find();
+		
+		float pNum = Float.parseFloat(mat1.group(0));
+		float sNum = Float.parseFloat(mat2.group(0));
+		
+		char operator;
+		if (pNum > 0) {
+			Matcher mat3 = bOperator.matcher(cadena);
+			mat3.find();
+			operator = mat3.group(0).charAt(0);
 		}
 		else {
-			return "Operación inválida";
+			cadena = cadena.substring(1);
+			Matcher mat3 = bOperator.matcher(cadena);
+			mat3.find();
+			operator = mat3.group(0).charAt(0);
 		}
-	}
+		
+		
+		switch(operator){
+		case '+':
+			result = Float.toString(pNum + sNum);
+			break;
+		case '-':
+			result = Float.toString(pNum - sNum);
+			break;
+		case '*':
+			result = Float.toString(pNum * sNum);
+			break;
+		case '/':
+			if(sNum != 0) {
+				result = Float.toString(pNum / sNum);
+				break;
+			}
+			else {
+				result = "Operación inválida";
+				break;
+			}
+		}
+		
+		return result;
+	} 
 }
